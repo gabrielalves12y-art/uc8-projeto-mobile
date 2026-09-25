@@ -1,5 +1,5 @@
-import { Funcionario } from './funcionario';
-import { Produto } from './produto';
+   import type { Funcionario } from './funcionario';
+   import type { Produto } from './produto';
 
 export type StatusPedido = 'pendente' | 'em_andamento' | 'concluido' | 'cancelado';
 
