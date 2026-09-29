@@ -1,27 +1,35 @@
+import type { ReactElement } from 'react';
+import { FlatList, StyleSheet, Text } from 'react-native';
 import type { Pedido } from '../types/pedido';
 import { CartaoPedido } from './CartaoPedido';
 
 interface ListaPedidosProps {
   pedidos: Pedido[];
-  carregando?: boolean;
+  cabecalho?: ReactElement;
 }
 
-export function ListaPedidos({ pedidos, carregando = false }: ListaPedidosProps) {
-  if (carregando) {
-    return <p>Carregando pedidos...</p>;
-  }
-
-  if (pedidos.length === 0) {
-    return <p>Nenhum pedido cadastrado.</p>;
-  }
-
+export function ListaPedidos({ pedidos, cabecalho }: ListaPedidosProps) {
   return (
-    <ul>
-      {pedidos.map((pedido) => (
-        <li key={pedido.id}>
-          <CartaoPedido pedido={pedido} />
-        </li>
-      ))}
-    </ul>
+    <FlatList
+      data={pedidos}
+      keyExtractor={(item) => String(item.id)}
+      renderItem={({ item }) => <CartaoPedido pedido={item} />}
+      ListHeaderComponent={cabecalho}
+      ListEmptyComponent={<Text style={estilos.vazio}>Nenhum pedido cadastrado.</Text>}
+      contentContainerStyle={estilos.conteudo}
+      keyboardShouldPersistTaps="handled"
+    />
   );
 }
+
+const estilos = StyleSheet.create({
+  conteudo: {
+    padding: 16,
+  },
+  vazio: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+});

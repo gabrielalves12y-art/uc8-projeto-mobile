@@ -1,157 +1,103 @@
 import { useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
-import type { Funcionario } from '../types/funcionario';
-import type { Produto } from '../types/produto';
-import type { Pedido, StatusPedido } from '../types/pedido';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-interface FormularioPedidoProps {
-  funcionarios: Funcionario[];
-  produtos: Produto[];
-  aoAdicionar: (pedido: Pedido) => void;
-  proximoId: number;
-}
-
-interface CamposFormulario {
+export interface DadosNovoPedido {
   mesa: string;
   cliente: string;
   observacoes: string;
-  status: StatusPedido;
-  atendenteId: string;
-  produtoId: string;
-  quantidade: string;
 }
 
-function camposIniciais(funcionarios: Funcionario[], produtos: Produto[]): CamposFormulario {
-  return {
-    mesa: '',
-    cliente: '',
-    observacoes: '',
-    status: 'pendente',
-    atendenteId: funcionarios[0] ? String(funcionarios[0].id) : '',
-    produtoId: produtos[0] ? String(produtos[0].id) : '',
-    quantidade: '1',
-  };
+interface FormularioPedidoProps {
+  aoCriar: (dados: DadosNovoPedido) => void;
 }
 
-export function FormularioPedido({
-  funcionarios,
-  produtos,
-  aoAdicionar,
-  proximoId,
-}: FormularioPedidoProps) {
-  const [campos, setCampos] = useState<CamposFormulario>(
-    camposIniciais(funcionarios, produtos),
-  );
+export function FormularioPedido({ aoCriar }: FormularioPedidoProps) {
+  const [mesa, setMesa] = useState<string>('');
+  const [cliente, setCliente] = useState<string>('');
+  const [observacoes, setObservacoes] = useState<string>('');
 
-  function tratarMudanca(
-    evento: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-  ) {
-    const { name, value } = evento.target;
-    setCampos((atual) => ({ ...atual, [name]: value }));
-  }
-
-  function tratarEnvio(evento: FormEvent<HTMLFormElement>) {
-    evento.preventDefault();
-
-    if (campos.mesa.trim() === '' || campos.cliente.trim() === '') {
-      return;
-    }
-
-    const produto = produtos.find((item) => item.id === Number(campos.produtoId));
-    const agora = new Date().toISOString();
-
-    const novoPedido: Pedido = {
-      id: proximoId,
-      mesa: campos.mesa.trim(),
-      cliente: campos.cliente.trim(),
-      atendenteId: Number(campos.atendenteId),
-      observacoes: campos.observacoes.trim(),
-      status: campos.status,
-      itens: produto
-        ? [
-            {
-              produtoId: produto.id,
-              quantidade: Number(campos.quantidade) || 1,
-              valorUnitario: produto.valorUnitario,
-            },
-          ]
-        : [],
-      criadoEm: agora,
-      atualizadoEm: agora,
-    };
-
-    aoAdicionar(novoPedido);
-    setCampos(camposIniciais(funcionarios, produtos));
+  function enviar() {
+    aoCriar({
+      mesa: mesa.trim(),
+      cliente: cliente.trim(),
+      observacoes: observacoes.trim(),
+    });
+    setMesa('');
+    setCliente('');
+    setObservacoes('');
   }
 
   return (
-    <form onSubmit={tratarEnvio}>
-      <h2>Novo pedido</h2>
+    <View style={estilos.formulario}>
+      <Text style={estilos.titulo}>Novo pedido</Text>
 
-      <label>
-        Mesa
-        <input name="mesa" value={campos.mesa} onChange={tratarMudanca} />
-      </label>
+      <Text style={estilos.rotulo}>Mesa</Text>
+      <TextInput
+        style={estilos.campo}
+        value={mesa}
+        onChangeText={setMesa}
+        placeholder="Ex.: 5"
+        keyboardType="numeric"
+      />
 
-      <label>
-        Cliente
-        <input name="cliente" value={campos.cliente} onChange={tratarMudanca} />
-      </label>
+      <Text style={estilos.rotulo}>Cliente</Text>
+      <TextInput
+        style={estilos.campo}
+        value={cliente}
+        onChangeText={setCliente}
+        placeholder="Nome do cliente"
+      />
 
-      <label>
-        Atendente
-        <select name="atendenteId" value={campos.atendenteId} onChange={tratarMudanca}>
-          {funcionarios.map((funcionario) => (
-            <option key={funcionario.id} value={funcionario.id}>
-              {funcionario.nome}
-            </option>
-          ))}
-        </select>
-      </label>
+      <Text style={estilos.rotulo}>Observações</Text>
+      <TextInput
+        style={estilos.campo}
+        value={observacoes}
+        onChangeText={setObservacoes}
+        placeholder="Opcional"
+      />
 
-      <label>
-        Produto
-        <select name="produtoId" value={campos.produtoId} onChange={tratarMudanca}>
-          {produtos.map((produto) => (
-            <option key={produto.id} value={produto.id}>
-              {produto.nome}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <label>
-        Quantidade
-        <input
-          name="quantidade"
-          type="number"
-          min={1}
-          value={campos.quantidade}
-          onChange={tratarMudanca}
-        />
-      </label>
-
-      <label>
-        Status
-        <select name="status" value={campos.status} onChange={tratarMudanca}>
-          <option value="pendente">Pendente</option>
-          <option value="em_andamento">Em andamento</option>
-          <option value="concluido">Concluído</option>
-          <option value="cancelado">Cancelado</option>
-        </select>
-      </label>
-
-      <label>
-        Observações
-        <textarea name="observacoes" value={campos.observacoes} onChange={tratarMudanca} />
-      </label>
-
-      <p>
-        Pré-visualização: mesa <strong>{campos.mesa || '(vazia)'}</strong>
-        {campos.cliente && ` — ${campos.cliente}`}
-      </p>
-
-      <button type="submit">Adicionar pedido</button>
-    </form>
+      <Pressable style={estilos.botao} onPress={enviar}>
+        <Text style={estilos.textoBotao}>Adicionar pedido</Text>
+      </Pressable>
+    </View>
   );
 }
+
+const estilos = StyleSheet.create({
+  formulario: {
+    marginBottom: 16,
+  },
+  titulo: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  rotulo: {
+    fontSize: 14,
+    color: '#374151',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  campo: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 16,
+  },
+  botao: {
+    backgroundColor: '#1d4ed8',
+    borderRadius: 6,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  textoBotao: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
