@@ -1,4 +1,7 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { fonte, useTema } from '../types/tema';
+import type { Tema } from '../types/tema';
 import type { StatusPedido } from '../types/pedido';
 
 interface BadgeStatusPedidoProps {
@@ -13,26 +16,27 @@ const rotulos: Record<StatusPedido, string> = {
 };
 
 export function BadgeStatusPedido({ status }: BadgeStatusPedidoProps) {
+  const tema = useTema();
+  const estilos = useMemo(() => criarEstilos(tema), [tema]);
+
   return (
-    <View style={[estilos.base, estilos[status]]}>
-      <Text style={estilos.texto}>{rotulos[status]}</Text>
+    <View style={[estilos.selo, estilos[status]]}>
+      <Text style={[estilos.texto, { color: tema.status[status].cor }]}>{rotulos[status]}</Text>
     </View>
   );
 }
 
-const estilos = StyleSheet.create({
-  base: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  texto: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  pendente: { backgroundColor: '#b45309' },
-  em_andamento: { backgroundColor: '#1d4ed8' },
-  concluido: { backgroundColor: '#15803d' },
-  cancelado: { backgroundColor: '#b91c1c' },
-});
+function criarEstilos(tema: Tema) {
+  return StyleSheet.create({
+    selo: {
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 999,
+    },
+    texto: { fontFamily: fonte, fontSize: 12, fontWeight: '600' },
+    pendente: { backgroundColor: tema.status.pendente.fundo },
+    em_andamento: { backgroundColor: tema.status.em_andamento.fundo },
+    concluido: { backgroundColor: tema.status.concluido.fundo },
+    cancelado: { backgroundColor: tema.status.cancelado.fundo },
+  });
+}

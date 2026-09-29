@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import type { ReactElement } from 'react';
 import { FlatList, StyleSheet, Text } from 'react-native';
+import { fonte, useTema } from '../types/tema';
+import type { Tema } from '../types/tema';
 import type { Pedido } from '../types/pedido';
 import { CartaoPedido } from './CartaoPedido';
 
@@ -9,27 +12,30 @@ interface ListaPedidosProps {
 }
 
 export function ListaPedidos({ pedidos, cabecalho }: ListaPedidosProps) {
+  const tema = useTema();
+  const estilos = useMemo(() => criarEstilos(tema), [tema]);
+
   return (
     <FlatList
       data={pedidos}
       keyExtractor={(item) => String(item.id)}
       renderItem={({ item }) => <CartaoPedido pedido={item} />}
       ListHeaderComponent={cabecalho}
-      ListEmptyComponent={<Text style={estilos.vazio}>Nenhum pedido cadastrado.</Text>}
+      ListEmptyComponent={<Text style={estilos.vazio}>Nenhum pedido encontrado.</Text>}
       contentContainerStyle={estilos.conteudo}
-      keyboardShouldPersistTaps="handled"
     />
   );
 }
 
-const estilos = StyleSheet.create({
-  conteudo: {
-    padding: 16,
-  },
-  vazio: {
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
-    marginTop: 16,
-  },
-});
+function criarEstilos(tema: Tema) {
+  return StyleSheet.create({
+    conteudo: { paddingHorizontal: 16, paddingTop: 4, paddingBottom: 32 },
+    vazio: {
+      fontFamily: fonte,
+      fontSize: 14,
+      color: tema.textoSuave,
+      textAlign: 'center',
+      paddingVertical: 32,
+    },
+  });
+}

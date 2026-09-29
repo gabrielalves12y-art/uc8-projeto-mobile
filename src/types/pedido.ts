@@ -20,3 +20,11 @@ export interface Pedido {
   criadoEm: string;
   atualizadoEm: string;
 }
+
+export interface NovoPedido {
+  mesa: string;
+  atendenteId: Funcionario['id'];
+  cliente: string;
+  observacoes: string;
+  itens: ItemPedido[];
+}
