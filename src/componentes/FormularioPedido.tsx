@@ -21,7 +21,7 @@ import type { OpcaoSeletor } from './Seletor';
 
 interface FormularioPedidoProps {
   visivel: boolean;
-  aoCriar: (dados: NovoPedido) => void;
+  aoCriar: (dados: NovoPedido) => Promise<string>;
   aoCancelar: () => void;
 }
 
@@ -66,6 +66,7 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
   const [observacoes, setObservacoes] = useState<string>('');
   const [linhas, setLinhas] = useState<LinhaItem[]>([novaLinha(1)]);
   const [erro, setErro] = useState<string>('');
+  const [salvando, setSalvando] = useState<boolean>(false);
 
   const total = linhas.reduce((soma, linha) => {
     const quantidade = paraNumero(linha.quantidade) || 0;
@@ -118,7 +119,9 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
     return '';
   }
 
-  function salvar() {
+  async function salvar() {
+    if (salvando) return;
+
     const itens: ItemPedido[] = linhas.map((linha) => ({
       produtoId: linha.produtoId,
       quantidade: paraNumero(linha.quantidade),
@@ -131,13 +134,20 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
       return;
     }
 
-    aoCriar({
+    setSalvando(true);
+    const falha = await aoCriar({
       mesa: mesa.trim(),
       atendenteId,
       cliente: cliente.trim(),
       observacoes: observacoes.trim(),
       itens,
     });
+    setSalvando(false);
+
+    if (falha !== '') {
+      setErro(falha);
+      return;
+    }
     reiniciar();
   }
 

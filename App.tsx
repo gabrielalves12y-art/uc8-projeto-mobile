@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -6,7 +6,7 @@ import { Botao } from './src/componentes/Botao';
 import { CartoesResumo } from './src/componentes/CartoesResumo';
 import { FormularioPedido } from './src/componentes/FormularioPedido';
 import { ListaPedidos } from './src/componentes/ListaPedidos';
-import { buscarPedidos } from './src/servicos/pedidosServico';
+import { buscarPedidos, salvarPedido } from './src/servicos/pedidosServico';
 import { TemaContext, fonte, temaClaro, temaEscuro } from './src/types/tema';
 import type { Tema } from './src/types/tema';
 import type { NovoPedido, Pedido } from './src/types/pedido';
@@ -14,45 +14,37 @@ import type { NovoPedido, Pedido } from './src/types/pedido';
 export default function App() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [carregando, setCarregando] = useState<boolean>(true);
+  const [erro, setErro] = useState<string>('');
   const [escuro, setEscuro] = useState<boolean>(false);
   const [formularioAberto, setFormularioAberto] = useState<boolean>(false);
 
   const tema = escuro ? temaEscuro : temaClaro;
   const estilos = useMemo(() => criarEstilos(tema), [tema]);
 
-  useEffect(() => {
-    let ativo = true;
-
-    buscarPedidos().then((dados) => {
-      if (ativo) {
-        setPedidos(dados);
-        setCarregando(false);
-      }
-    });
-
-    return () => {
-      ativo = false;
-    };
+  const carregarPedidos = useCallback(async () => {
+    try {
+      setPedidos(await buscarPedidos());
+      setErro('');
+    } catch {
+      setErro('Não foi possível carregar os pedidos. Verifique se a API está no ar.');
+    } finally {
+      setCarregando(false);
+    }
   }, []);
 
-  function criarPedido(dados: NovoPedido) {
-    setPedidos((atual) => {
-      const proximoId = atual.length === 0 ? 1 : Math.max(...atual.map((p) => p.id)) + 1;
-      const agora = new Date().toISOString();
-      const novo: Pedido = {
-        id: proximoId,
-        mesa: dados.mesa,
-        atendenteId: dados.atendenteId,
-        cliente: dados.cliente,
-        itens: dados.itens,
-        status: 'pendente',
-        observacoes: dados.observacoes,
-        criadoEm: agora,
-        atualizadoEm: agora,
-      };
-      return [novo, ...atual];
-    });
+  useEffect(() => {
+    carregarPedidos();
+  }, [carregarPedidos]);
+
+  async function criarPedido(dados: NovoPedido): Promise<string> {
+    try {
+      await salvarPedido(dados);
+    } catch (e) {
+      return e instanceof Error ? e.message : 'Não foi possível salvar o pedido.';
+    }
     setFormularioAberto(false);
+    await carregarPedidos();
+    return '';
   }
 
   return (
@@ -72,6 +64,8 @@ export default function App() {
             </View>
             <Botao titulo="+ Novo pedido" aoPressionar={() => setFormularioAberto(true)} />
           </View>
+
+          {erro !== '' && <Text style={estilos.erro}>{erro}</Text>}
 
           {carregando ? (
             <View style={estilos.aviso}>
@@ -112,5 +106,16 @@ function criarEstilos(tema: Tema) {
     },
     aviso: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     textoAviso: { fontFamily: fonte, fontSize: 14, color: tema.textoSuave, marginTop: 12 },
+    erro: {
+      fontFamily: fonte,
+      fontSize: 13,
+      color: tema.perigo,
+      backgroundColor: tema.perigoFundo,
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      marginHorizontal: 16,
+      marginBottom: 8,
+    },
   });
 }
