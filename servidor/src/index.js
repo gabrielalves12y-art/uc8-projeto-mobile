@@ -15,7 +15,18 @@ app.get('/saude', async (_req, res) => {
   }
 });
 
-app.get('/pedidos', async (_req, res) => {
+app.get('/pedidos', async (req, res) => {
+  let inicio = null;
+  let fim = null;
+  if (req.query.inicio !== undefined || req.query.fim !== undefined) {
+    inicio = new Date(String(req.query.inicio));
+    fim = new Date(String(req.query.fim));
+    if (Number.isNaN(inicio.getTime()) || Number.isNaN(fim.getTime()) || inicio >= fim) {
+      res.status(400).json({ erro: 'Período inválido.' });
+      return;
+    }
+  }
+
   try {
     const { rows } = await pool.query(`
       SELECT p.id,
@@ -39,8 +50,12 @@ app.get('/pedidos', async (_req, res) => {
              ) AS itens
         FROM pedidos p
         LEFT JOIN itens_pedido i ON i.pedido_id = p.id
+       WHERE p.criado_em >= COALESCE($1::timestamptz,
+               date_trunc('day', now() AT TIME ZONE 'America/Sao_Paulo') AT TIME ZONE 'America/Sao_Paulo')
+         AND p.criado_em <  COALESCE($2::timestamptz,
+               (date_trunc('day', now() AT TIME ZONE 'America/Sao_Paulo') + interval '1 day') AT TIME ZONE 'America/Sao_Paulo')
        GROUP BY p.id
-       ORDER BY p.criado_em DESC, p.id DESC`);
+       ORDER BY p.criado_em DESC, p.id DESC`, [inicio, fim]);
     res.json(rows);
   } catch (erro) {
     console.error(erro);
@@ -71,6 +86,7 @@ app.post('/pedidos', async (req, res) => {
   const { mesa, cliente, atendenteId, observacoes = '', itens } = req.body;
   const conexao = await pool.connect();
   try {
+    
     const { rows: [atendente] } = await conexao.query(
       'SELECT nome FROM funcionarios WHERE id = $1',
       [atendenteId],

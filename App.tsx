@@ -3,7 +3,6 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Botao } from './src/componentes/Botao';
-import { CartoesResumo } from './src/componentes/CartoesResumo';
 import { FormularioPedido } from './src/componentes/FormularioPedido';
 import { ListaPedidos } from './src/componentes/ListaPedidos';
 import { buscarPedidos, salvarPedido } from './src/servicos/pedidosServico';
@@ -36,6 +35,7 @@ export default function App() {
     carregarPedidos();
   }, [carregarPedidos]);
 
+  // Devolve '' em caso de sucesso ou a mensagem de erro, que o formulário exibe.
   async function criarPedido(dados: NovoPedido): Promise<string> {
     try {
       await salvarPedido(dados);
@@ -73,7 +73,7 @@ export default function App() {
               <Text style={estilos.textoAviso}>Carregando pedidos...</Text>
             </View>
           ) : (
-            <ListaPedidos pedidos={pedidos} cabecalho={<CartoesResumo pedidos={pedidos} />} />
+            <ListaPedidos pedidos={pedidos} />
           )}
 
           <FormularioPedido
