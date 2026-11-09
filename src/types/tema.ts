@@ -16,6 +16,7 @@ export interface Tema {
   borda: string;
   primaria: string;
   primariaEscura: string;
+  primariaFundo: string;
   perigo: string;
   perigoFundo: string;
   status: Record<StatusPedido, CoresStatus>;
@@ -23,20 +24,21 @@ export interface Tema {
 
 export const temaClaro: Tema = {
   escuro: false,
-  fundo: '#f4f5f7',
-  superficie: '#ffffff',
-  texto: '#1f2430',
-  textoSuave: '#6b7280',
-  borda: '#e3e5ea',
-  primaria: '#3b5bfd',
-  primariaEscura: '#2d47cc',
-  perigo: '#e0483e',
-  perigoFundo: '#fdecea',
+  fundo: '#fbf5ec',
+  superficie: '#fffdf9',
+  texto: '#3b2a20',
+  textoSuave: '#7a6455',
+  borda: '#eadfd0',
+  primaria: '#c93f1a',
+  primariaEscura: '#a93213',
+  primariaFundo: '#fdeae3',
+  perigo: '#a61b2b',
+  perigoFundo: '#fbe6e4',
   status: {
-    pendente: { cor: '#b7791f', fundo: '#fef3d9' },
-    em_andamento: { cor: '#2563eb', fundo: '#e2ebff' },
-    concluido: { cor: '#1f9d55', fundo: '#e2f6e9' },
-    cancelado: { cor: '#6b7280', fundo: '#eceff1' },
+    pendente: { cor: '#8f5f00', fundo: '#fdf0cc' },
+    em_andamento: { cor: '#7b3f8c', fundo: '#f2e5f6' },
+    concluido: { cor: '#2f7a2c', fundo: '#e4f2dd' },
+    cancelado: { cor: '#6f5f53', fundo: '#efe9e3' },
   },
 };
 
@@ -47,15 +49,16 @@ export const temaEscuro: Tema = {
   texto: '#e8eaf0',
   textoSuave: '#8b92a5',
   borda: '#2a2d3a',
-  primaria: '#5b7cfd',
-  primariaEscura: '#4a68e8',
-  perigo: '#f06b62',
-  perigoFundo: '#2d1a19',
+  primaria: '#d0422d',
+  primariaEscura: '#b53826',
+  primariaFundo: '#2f1a1a',
+  perigo: '#ec7aa6',
+  perigoFundo: '#2d1a24',
   status: {
     pendente: { cor: '#e0a020', fundo: '#2a2010' },
     em_andamento: { cor: '#5b9bff', fundo: '#101e36' },
     concluido: { cor: '#34c76a', fundo: '#0d2318' },
-    cancelado: { cor: '#8b92a5', fundo: '#1e2030' },
+    cancelado: { cor: '#9a9a9a', fundo: '#232323' },
   },
 };
 

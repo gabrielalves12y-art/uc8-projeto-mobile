@@ -22,3 +22,4 @@ export function formatarDataHora(iso: string): string {
   const minuto = doisDigitos(data.getMinutes());
   return `${dia}/${mes}/${data.getFullYear()} ${hora}:${minuto}`;
 }
+

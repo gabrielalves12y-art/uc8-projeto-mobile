@@ -86,7 +86,7 @@ app.post('/pedidos', async (req, res) => {
   const { mesa, cliente, atendenteId, observacoes = '', itens } = req.body;
   const conexao = await pool.connect();
   try {
-    
+  
     const { rows: [atendente] } = await conexao.query(
       'SELECT nome FROM funcionarios WHERE id = $1',
       [atendenteId],
@@ -133,3 +133,4 @@ app.post('/pedidos', async (req, res) => {
 
 const porta = Number(process.env.PORT ?? 3000);
 app.listen(porta, '0.0.0.0', () => console.log(`API de pedidos em http://localhost:${porta}`));
+

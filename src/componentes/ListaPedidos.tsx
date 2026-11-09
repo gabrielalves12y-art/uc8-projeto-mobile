@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import type { ReactElement } from 'react';
 import { FlatList, StyleSheet, Text } from 'react-native';
 import { fonte, useTema } from '../types/tema';
 import type { Tema } from '../types/tema';
@@ -8,10 +7,9 @@ import { CartaoPedido } from './CartaoPedido';
 
 interface ListaPedidosProps {
   pedidos: Pedido[];
-  cabecalho?: ReactElement;
 }
 
-export function ListaPedidos({ pedidos, cabecalho }: ListaPedidosProps) {
+export function ListaPedidos({ pedidos }: ListaPedidosProps) {
   const tema = useTema();
   const estilos = useMemo(() => criarEstilos(tema), [tema]);
 
@@ -20,8 +18,7 @@ export function ListaPedidos({ pedidos, cabecalho }: ListaPedidosProps) {
       data={pedidos}
       keyExtractor={(item) => String(item.id)}
       renderItem={({ item }) => <CartaoPedido pedido={item} />}
-      ListHeaderComponent={cabecalho}
-      ListEmptyComponent={<Text style={estilos.vazio}>Nenhum pedido encontrado.</Text>}
+      ListEmptyComponent={<Text style={estilos.vazio}>Nenhum pedido feito hoje.</Text>}
       contentContainerStyle={estilos.conteudo}
     />
   );

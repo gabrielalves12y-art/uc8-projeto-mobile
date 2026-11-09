@@ -1,5 +1,5 @@
 {
-  "name": "Gerenciamento-de-Pedidos",
+  "name": "Menu-de-hoje",
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {

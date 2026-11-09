@@ -35,7 +35,6 @@ export default function App() {
     carregarPedidos();
   }, [carregarPedidos]);
 
-  // Devolve '' em caso de sucesso ou a mensagem de erro, que o formulário exibe.
   async function criarPedido(dados: NovoPedido): Promise<string> {
     try {
       await salvarPedido(dados);
@@ -55,7 +54,7 @@ export default function App() {
 
           <View style={estilos.topo}>
             <View style={estilos.linhaTitulo}>
-              <Text style={estilos.titulo}>Gerenciamento de Pedidos</Text>
+              <Text style={estilos.titulo}>Menu de Hoje</Text>
               <Botao
                 titulo={escuro ? '☀️' : '🌑'}
                 variante="secundario"

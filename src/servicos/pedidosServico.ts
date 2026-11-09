@@ -36,7 +36,13 @@ async function lerErro(resposta: Response, padrao: string): Promise<string> {
 }
 
 export async function buscarPedidos(): Promise<Pedido[]> {
-  const resposta = await chamarApi('/pedidos');
+  const inicio = new Date();
+  inicio.setHours(0, 0, 0, 0);
+  const fim = new Date(inicio);
+  fim.setDate(fim.getDate() + 1);
+
+  const parametros = `inicio=${encodeURIComponent(inicio.toISOString())}&fim=${encodeURIComponent(fim.toISOString())}`;
+  const resposta = await chamarApi(`/pedidos?${parametros}`);
   if (!resposta.ok) {
     throw new Error(await lerErro(resposta, 'Falha ao ler os pedidos.'));
   }
@@ -53,4 +59,5 @@ export async function salvarPedido(dados: NovoPedido): Promise<void> {
     throw new Error(await lerErro(resposta, 'Falha ao salvar o pedido.'));
   }
 }
+
 
