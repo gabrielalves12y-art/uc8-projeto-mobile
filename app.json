@@ -21,6 +21,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "40546036-04c4-4332-8c4e-9aeac1b5d36d"
+      }
+    },
+    "owner": "emerson046s-team"
   }
 }
