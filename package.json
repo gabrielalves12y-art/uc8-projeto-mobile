@@ -17,9 +17,12 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "pb": "npx expo prebuild",
+    "build:and": "eas build -p android --profile productionand",
+    "build:ios": "npx eas build -p ios"
   },
   "private": true
 }

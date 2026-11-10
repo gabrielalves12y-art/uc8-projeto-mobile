@@ -1,0 +1,59 @@
+name: EAS Build
+
+on:
+  # Disparo manual pela aba Actions, escolhendo plataforma e perfil
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Plataforma do build"
+        type: choice
+        options:
+          - all
+          - android
+          - ios
+        default: android
+      profile:
+        description: "Perfil do eas.json"
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+        default: preview
+  # Build automático ao criar uma tag de versão (ex: v1.0.0)
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: eas-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: uc8-projeto-mobile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm   # troque para yarn ou pnpm se for o seu caso
+
+      - name: Setup Expo e EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Build
+        run: |
+          PLATFORM="${{ github.event.inputs.platform || 'android' }}"
+          PROFILE="${{ github.event.inputs.profile || 'production' }}"
+          eas build --platform "$PLATFORM" --profile "$PROFILE" --non-interactive --no-wait
