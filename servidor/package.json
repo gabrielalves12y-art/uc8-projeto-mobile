@@ -1,0 +1,17 @@
+{
+  "name": "gerenciamento-de-pedidos-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file=.env src/index.js",
+    "migrar": "node --env-file=.env src/migrar.js",
+    "inspecionar": "node --env-file=.env src/inspecionar.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
+    "cors": "^2.8.6",
+    "express": "^4.21.2",
+    "ws": "^8.22.0"
+  }
+}
