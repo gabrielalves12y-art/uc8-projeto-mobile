@@ -32,7 +32,6 @@ interface LinhaItem {
   quantidade: string;
 }
 
-// Cada categoria de produto e cada cargo ganha uma cor própria do tema.
 function corCategoria(tema: Tema, categoria: string): string {
   if (categoria === 'Bebidas Quentes') return tema.status.pendente.cor;
   if (categoria === 'Bebidas Frias') return tema.status.em_andamento.cor;
@@ -59,7 +58,6 @@ function paraNumero(texto: string): number {
   return Number(texto.trim().replace(',', '.'));
 }
 
-// O valor unitário vem sempre do catálogo e não pode ser alterado no pedido.
 function precoDe(produtoId: number): number {
   return produtos.find((produto) => produto.id === produtoId)?.valorUnitario ?? 0;
 }
@@ -455,7 +453,6 @@ function criarEstilos(tema: Tema) {
       elevation: 16,
     },
 
-    // Cabeçalho colorido
     cabecalho: {
       backgroundColor: tema.primaria,
       paddingHorizontal: 20,
@@ -513,7 +510,6 @@ function criarEstilos(tema: Tema) {
     },
     textoFechar: { fontFamily: fonte, fontSize: 14, fontWeight: '700', color: '#ffffff' },
 
-    // Corpo
     rolagem: { flexShrink: 1 },
     conteudo: { padding: 16, paddingBottom: 4 },
     rotulo: {
@@ -540,7 +536,6 @@ function criarEstilos(tema: Tema) {
     colunaCliente: { flex: 2 },
     entradaLonga: { minHeight: 76, textAlignVertical: 'top', marginTop: 10 },
 
-    // Itens
     botaoItem: {
       backgroundColor: tema.primariaFundo,
       borderWidth: 1.5,
@@ -613,7 +608,6 @@ function criarEstilos(tema: Tema) {
       paddingTop: 11,
     },
 
-    // Rodapé fixo
     rodape: {
       backgroundColor: tema.superficie,
       borderTopWidth: 1,

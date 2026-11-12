@@ -6,9 +6,7 @@ import type { Tema } from '../types/tema';
 export interface OpcaoSeletor {
   valor: number;
   rotulo: string;
-  // Texto secundário à direita (ex.: preço ou cargo).
   detalhe?: string;
-  // Cor da bolinha que identifica a opção (ex.: categoria).
   cor?: string;
 }
 
