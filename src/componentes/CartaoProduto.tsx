@@ -42,29 +42,24 @@ export function CartaoProduto({ produto }: CartaoProdutoProps) {
 function criarEstilos(tema: Tema) {
   return StyleSheet.create({
     cartao: {
+      flex: 1,
       backgroundColor: tema.superficie,
       borderWidth: 1,
       borderColor: tema.borda,
       borderRadius: 10,
       overflow: 'hidden',
-      marginBottom: 12,
     },
-    foto: { width: '100%', height: 160 },
+    foto: { width: '100%', aspectRatio: 4 / 3 },
     fotoVazia: {
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: tema.primariaFundo,
     },
-    emoji: { fontSize: 64 },
-    corpo: { padding: 16, gap: 8 },
-    linhaTitulo: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 12,
-    },
-    nome: { flex: 1, fontFamily: fonte, fontSize: 16, fontWeight: '700', color: tema.texto },
-    valor: { fontFamily: fonte, fontSize: 16, fontWeight: '700', color: tema.primaria },
-    descricao: { fontFamily: fonte, fontSize: 13, lineHeight: 19, color: tema.textoSuave },
+    emoji: { fontSize: 48 },
+    corpo: { padding: 12, gap: 6 },
+    linhaTitulo: { gap: 2 },
+    nome: { fontFamily: fonte, fontSize: 15, fontWeight: '700', color: tema.texto },
+    valor: { fontFamily: fonte, fontSize: 15, fontWeight: '700', color: tema.primaria },
+    descricao: { fontFamily: fonte, fontSize: 12, lineHeight: 17, color: tema.textoSuave },
   });
 }

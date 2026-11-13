@@ -1,39 +1,56 @@
 import { useMemo } from 'react';
-import { SectionList, StyleSheet, Text } from 'react-native';
+import { SectionList, StyleSheet, Text, View } from 'react-native';
 import { CartaoProduto } from '../componentes/CartaoProduto';
 import { produtos } from '../types/dados/catalogo';
 import { fonte, useTema } from '../types/tema';
 import type { Tema } from '../types/tema';
 import type { Produto } from '../types/produto';
 
+const COLUNAS = 2;
+
+type Linha = Produto[];
+
 interface Secao {
   titulo: string;
-  data: Produto[];
+  data: Linha[];
 }
 
-function agruparPorCategoria(lista: Produto[]): Secao[] {
-  const secoes: Secao[] = [];
+function montarSecoes(lista: Produto[]): Secao[] {
+  const porCategoria = new Map<string, Produto[]>();
   for (const produto of lista) {
-    const existente = secoes.find((secao) => secao.titulo === produto.categoria);
-    if (existente) {
-      existente.data.push(produto);
-    } else {
-      secoes.push({ titulo: produto.categoria, data: [produto] });
-    }
+    const grupo = porCategoria.get(produto.categoria) ?? [];
+    grupo.push(produto);
+    porCategoria.set(produto.categoria, grupo);
   }
-  return secoes;
+
+  return [...porCategoria].map(([titulo, itens]) => {
+    const linhas: Linha[] = [];
+    for (let i = 0; i < itens.length; i += COLUNAS) {
+      linhas.push(itens.slice(i, i + COLUNAS));
+    }
+    return { titulo, data: linhas };
+  });
 }
 
 export function TelaMenu() {
   const tema = useTema();
   const estilos = useMemo(() => criarEstilos(tema), [tema]);
-  const secoes = useMemo(() => agruparPorCategoria(produtos), []);
+  const secoes = useMemo(() => montarSecoes(produtos), []);
 
   return (
     <SectionList
       sections={secoes}
-      keyExtractor={(item) => String(item.id)}
-      renderItem={({ item }) => <CartaoProduto produto={item} />}
+      keyExtractor={(linha) => linha.map((produto) => produto.id).join('-')}
+      renderItem={({ item: linha }) => (
+        <View style={estilos.linha}>
+          {linha.map((produto) => (
+            <CartaoProduto key={produto.id} produto={produto} />
+          ))}
+          {Array.from({ length: COLUNAS - linha.length }, (_, i) => (
+            <View key={`vazio-${i}`} style={estilos.vazio} />
+          ))}
+        </View>
+      )}
       renderSectionHeader={({ section }) => <Text style={estilos.secao}>{section.titulo}</Text>}
       stickySectionHeadersEnabled={false}
       contentContainerStyle={estilos.conteudo}
@@ -54,5 +71,7 @@ function criarEstilos(tema: Tema) {
       marginTop: 12,
       marginBottom: 8,
     },
+    linha: { flexDirection: 'row', gap: 12, marginBottom: 12 },
+    vazio: { flex: 1 },
   });
 }
