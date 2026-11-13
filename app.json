@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Menu-de-hoje",
-    "slug": "Menu-de-hoje",
+    "name": "Menu de hoje",
+    "slug": "Menu de hoje",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
