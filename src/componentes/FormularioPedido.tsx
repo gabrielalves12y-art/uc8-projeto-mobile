@@ -1,15 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import type { LayoutChangeEvent } from 'react-native';
 import { funcionarios, produtos } from '../types/dados/catalogo';
 import { fonte, useTema } from '../types/tema';
 import type { Tema } from '../types/tema';
@@ -28,7 +28,8 @@ interface FormularioPedidoProps {
 
 interface LinhaItem {
   chave: number;
-  produtoId: number;
+  /** `null` enquanto o usuário ainda não escolheu o item. */
+  produtoId: number | null;
   quantidade: string;
 }
 
@@ -46,19 +47,15 @@ function corCargo(tema: Tema, cargo: string): string {
 }
 
 function novaLinha(chave: number): LinhaItem {
-  const primeiro = produtos[0];
-  return {
-    chave,
-    produtoId: primeiro.id,
-    quantidade: '1',
-  };
+  return { chave, produtoId: null, quantidade: '1' };
 }
 
 function paraNumero(texto: string): number {
   return Number(texto.trim().replace(',', '.'));
 }
 
-function precoDe(produtoId: number): number {
+function precoDe(produtoId: number | null): number {
+  if (produtoId === null) return 0;
   return produtos.find((produto) => produto.id === produtoId)?.valorUnitario ?? 0;
 }
 
@@ -67,15 +64,16 @@ interface SecaoProps {
   titulo: string;
   cor: string;
   acao?: ReactNode;
+  aoLayout?: (evento: LayoutChangeEvent) => void;
   children: ReactNode;
 }
 
-function Secao({ icone, titulo, cor, acao, children }: SecaoProps) {
+function Secao({ icone, titulo, cor, acao, aoLayout, children }: SecaoProps) {
   const tema = useTema();
   const estilos = useMemo(() => criarEstilosSecao(tema), [tema]);
 
   return (
-    <View style={estilos.secao}>
+    <View style={estilos.secao} onLayout={aoLayout}>
       <View style={estilos.cabecalho}>
         <View style={[estilos.icone, { backgroundColor: `${cor}26`, borderColor: `${cor}55` }]}>
           <Text style={estilos.emoji}>{icone}</Text>
@@ -122,12 +120,19 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
   const [erro, setErro] = useState<string>('');
   const [salvando, setSalvando] = useState<boolean>(false);
 
+  const rolagemRef = useRef<ScrollView>(null);
+  const proximaChave = useRef<number>(1);
+  const yItens = useRef<number>(0);
+  const linhaParaMostrar = useRef<number | null>(null);
+
   const total = linhas.reduce((soma, linha) => {
     const quantidade = paraNumero(linha.quantidade) || 0;
     return soma + quantidade * precoDe(linha.produtoId);
   }, 0);
 
-  const unidades = linhas.reduce((soma, linha) => {
+  const linhasEscolhidas = linhas.filter((linha) => linha.produtoId !== null);
+
+  const unidades = linhasEscolhidas.reduce((soma, linha) => {
     const quantidade = paraNumero(linha.quantidade);
     return soma + (Number.isFinite(quantidade) && quantidade > 0 ? quantidade : 0);
   }, 0);
@@ -143,10 +148,9 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
   }
 
   function adicionarLinha() {
-    setLinhas((atual) => [
-      ...atual,
-      novaLinha(atual.length === 0 ? 1 : Math.max(...atual.map((l) => l.chave)) + 1),
-    ]);
+    const chave = proximaChave.current++;
+    linhaParaMostrar.current = chave;
+    setLinhas((atual) => [...atual, novaLinha(chave)]);
   }
 
   function removerLinha(chave: number) {
@@ -162,9 +166,10 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
     setErro('');
   }
 
-  function validar(itens: ItemPedido[]): string {
+  function validar(itens: ItemPedido[], haLinhaSemItem: boolean): string {
     if (mesa.trim() === '') return 'Informe o número da mesa.';
     if (cliente.trim() === '') return 'Informe o nome do cliente.';
+    if (haLinhaSemItem) return 'Escolha o item em todas as linhas ou remova as que estiverem vazias.';
     if (itens.length === 0) return 'Adicione ao menos um item ao pedido.';
     for (const item of itens) {
       if (!Number.isInteger(item.quantidade) || item.quantidade <= 0) {
@@ -180,13 +185,21 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
   async function salvar() {
     if (salvando) return;
 
-    const itens: ItemPedido[] = linhas.map((linha) => ({
-      produtoId: linha.produtoId,
-      quantidade: paraNumero(linha.quantidade),
-      valorUnitario: precoDe(linha.produtoId),
-    }));
+    const itens: ItemPedido[] = [];
+    let haLinhaSemItem = false;
+    for (const linha of linhas) {
+      if (linha.produtoId === null) {
+        haLinhaSemItem = true;
+        continue;
+      }
+      itens.push({
+        produtoId: linha.produtoId,
+        quantidade: paraNumero(linha.quantidade),
+        valorUnitario: precoDe(linha.produtoId),
+      });
+    }
 
-    const mensagem = validar(itens);
+    const mensagem = validar(itens, haLinhaSemItem);
     if (mensagem !== '') {
       setErro(mensagem);
       return;
@@ -218,7 +231,7 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
     <Modal visible={visivel} transparent animationType="fade" onRequestClose={cancelar}>
       <KeyboardAvoidingView
         style={estilos.fundo}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
       >
         <View style={estilos.dialogo}>
           <View style={estilos.cabecalho}>
@@ -239,6 +252,7 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
           </View>
 
           <ScrollView
+            ref={rolagemRef}
             style={estilos.rolagem}
             contentContainerStyle={estilos.conteudo}
             keyboardShouldPersistTaps="handled"
@@ -273,6 +287,9 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
               icone="🥪"
               titulo="Itens do pedido"
               cor={tema.status.pendente.cor}
+              aoLayout={(evento) => {
+                yItens.current = evento.nativeEvent.layout.y;
+              }}
               acao={
                 <Pressable
                   style={({ pressed }) => [estilos.botaoItem, pressed && estilos.pressionado]}
@@ -298,7 +315,18 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
                 const subtotal = (paraNumero(linha.quantidade) || 0) * preco;
 
                 return (
-                  <View key={linha.chave} style={[estilos.cartaoItem, { borderLeftColor: cor }]}>
+                  <View
+                    key={linha.chave}
+                    style={[estilos.cartaoItem, { borderLeftColor: cor }]}
+                    onLayout={(evento) => {
+                      if (linhaParaMostrar.current !== linha.chave) return;
+                      linhaParaMostrar.current = null;
+                      rolagemRef.current?.scrollTo({
+                        y: Math.max(0, yItens.current + evento.nativeEvent.layout.y - 8),
+                        animated: true,
+                      });
+                    }}
+                  >
                     <View style={estilos.topoItem}>
                       <View style={[estilos.numero, { backgroundColor: `${cor}26` }]}>
                         <Text style={[estilos.textoNumero, { color: cor }]}>{indice + 1}</Text>
@@ -324,6 +352,8 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
                       opcoes={opcoesProduto}
                       valor={linha.produtoId}
                       aoMudar={(produtoId) => trocarProduto(linha.chave, produtoId)}
+                      placeholder="Escolha o item"
+                      iniciarAberto={linha.produtoId === null}
                     />
 
                     <View style={estilos.camposItem}>
@@ -357,6 +387,7 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
                 style={estilos.entradaLonga}
                 value={observacoes}
                 onChangeText={setObservacoes}
+                onFocus={() => setTimeout(() => rolagemRef.current?.scrollToEnd({ animated: true }), 250)}
                 placeholder="Opcional: sem cebola, ponto da carne…"
                 multiline
                 maxLength={500}
@@ -376,8 +407,8 @@ export function FormularioPedido({ visivel, aoCriar, aoCancelar }: FormularioPed
               <View>
                 <Text style={estilos.rotuloResumo}>Total do pedido</Text>
                 <Text style={estilos.detalheResumo}>
-                  {unidades} {unidades === 1 ? 'unidade' : 'unidades'} · {linhas.length}{' '}
-                  {linhas.length === 1 ? 'item' : 'itens'}
+                  {unidades} {unidades === 1 ? 'unidade' : 'unidades'} · {linhasEscolhidas.length}{' '}
+                  {linhasEscolhidas.length === 1 ? 'item' : 'itens'}
                 </Text>
               </View>
               <Text style={estilos.valorResumo}>{formatarMoeda(total)}</Text>

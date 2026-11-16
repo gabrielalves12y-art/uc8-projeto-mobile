@@ -12,16 +12,25 @@ export interface OpcaoSeletor {
 
 interface SeletorProps {
   opcoes: OpcaoSeletor[];
-  valor: number;
+  valor: number | null;
   aoMudar: (valor: number) => void;
+  placeholder?: string;
+  iniciarAberto?: boolean;
 }
 
-export function Seletor({ opcoes, valor, aoMudar }: SeletorProps) {
+export function Seletor({
+  opcoes,
+  valor,
+  aoMudar,
+  placeholder = 'Selecione',
+  iniciarAberto = false,
+}: SeletorProps) {
   const tema = useTema();
   const estilos = useMemo(() => criarEstilos(tema), [tema]);
-  const [aberto, setAberto] = useState<boolean>(false);
+  const [aberto, setAberto] = useState<boolean>(iniciarAberto);
 
-  const selecionada = opcoes.find((opcao) => opcao.valor === valor);
+  const selecionada =
+    valor === null ? undefined : opcoes.find((opcao) => opcao.valor === valor);
 
   function escolher(novoValor: number) {
     aoMudar(novoValor);
@@ -35,8 +44,11 @@ export function Seletor({ opcoes, valor, aoMudar }: SeletorProps) {
         onPress={() => setAberto((atual) => !atual)}
       >
         <View style={[estilos.bolinha, { backgroundColor: selecionada?.cor ?? tema.borda }]} />
-        <Text style={estilos.textoCampo} numberOfLines={1}>
-          {selecionada ? selecionada.rotulo : 'Selecione'}
+        <Text
+          style={[estilos.textoCampo, !selecionada && estilos.textoPlaceholder]}
+          numberOfLines={1}
+        >
+          {selecionada ? selecionada.rotulo : placeholder}
         </Text>
         {selecionada?.detalhe !== undefined && (
           <Text style={estilos.detalheCampo}>{selecionada.detalhe}</Text>
@@ -98,6 +110,7 @@ function criarEstilos(tema: Tema) {
     campoAberto: { borderColor: tema.primaria, backgroundColor: tema.superficie },
     bolinha: { width: 10, height: 10, borderRadius: 5 },
     textoCampo: { flex: 1, fontFamily: fonte, fontSize: 14, color: tema.texto },
+    textoPlaceholder: { color: tema.textoSuave },
     detalheCampo: { fontFamily: fonte, fontSize: 12, color: tema.textoSuave },
     seta: { fontFamily: fonte, fontSize: 14, color: tema.textoSuave },
     setaAberta: { color: tema.primaria, transform: [{ rotate: '180deg' }] },
