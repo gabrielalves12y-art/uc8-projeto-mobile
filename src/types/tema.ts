@@ -62,7 +62,11 @@ export const temaEscuro: Tema = {
   },
 };
 
-export const fonte: string = Platform.select({ ios: 'Menlo', default: 'Roboto' });
+export const fonte: string = Platform.select({
+  android: 'sans-serif',
+
+  default: 'System',
+});
 
 export const TemaContext = createContext<Tema>(temaClaro);
 
